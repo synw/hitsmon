@@ -1,0 +1,9 @@
+{
+	"type": "rethinkdb",
+	"addr":"localhost:28015",
+	"user":"",
+	"password":"",
+	"db": "",
+	"table": "",
+	"frequency": 1
+}
