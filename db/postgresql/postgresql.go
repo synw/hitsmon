@@ -21,7 +21,7 @@ func InitDb() *terr.Trace {
 }
 
 func connect() (*gorm.DB, *terr.Trace) {
-	db, err := gorm.Open("postgres", "host="+state.Conf.Addr+" user="+state.Conf.User+" dbname="+state.Conf.Db+" sslmode=disable password="+state.Conf.Pwd+"")
+	db, err := gorm.Open("postgres", "host="+state.Conf.Db.Addr+" user="+state.Conf.Db.User+" dbname="+state.Conf.Db.Name+" sslmode=disable password="+state.Conf.Db.Pwd+"")
 	if err != nil {
 		tr := terr.New("db.postgresql.connect()", err)
 		return db, tr

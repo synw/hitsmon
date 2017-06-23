@@ -1,6 +1,7 @@
 package rethinkdb
 
 import (
+	"fmt"
 	"github.com/synw/hitsmon/state"
 	"github.com/synw/hitsmon/types"
 	"github.com/synw/terr"
@@ -16,6 +17,9 @@ func InitDb() *terr.Trace {
 		return tr
 	}
 	conn = cn
+	if state.Verbosity > 0 {
+		fmt.Println("Rethinkdb database is up at ", state.Conf.Db.Addr)
+	}
 	return nil
 }
 
@@ -23,7 +27,7 @@ func Save(hits []*types.Hit) (int, *terr.Trace) {
 	session := conn
 	num := 0
 	for _, hit := range hits {
-		_, err := r.DB("metrics").Table("hits").Insert(hit, r.InsertOpts{Durability: "soft", ReturnChanges: false}).Run(session)
+		_, err := r.DB(state.Conf.Db.Name).Table(state.Conf.Db.Table).Insert(hit, r.InsertOpts{Durability: "soft", ReturnChanges: false}).Run(session)
 		if err != nil {
 			tr := terr.New("db.rethinkdb.Save", err)
 			return num, tr
@@ -34,9 +38,9 @@ func Save(hits []*types.Hit) (int, *terr.Trace) {
 }
 
 func connect() (*r.Session, *terr.Trace) {
-	user := state.Conf.User
-	pwd := state.Conf.Pwd
-	addr := state.Conf.Addr
+	user := state.Conf.Db.User
+	pwd := state.Conf.Db.Pwd
+	addr := state.Conf.Db.Addr
 	// connect to Rethinkdb
 	session, err := r.Connect(r.ConnectOpts{
 		Address:    addr,

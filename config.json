@@ -1,9 +1,10 @@
 {
-	"type": "rethinkdb",
-	"addr":"localhost:28015",
-	"user":"",
-	"password":"",
-	"db": "",
-	"table": "",
+	"type": "influxdb",
+	"addr":"http://localhost:8086",
+	"user":"admin",
+	"password":"admin",
+	"db": "hits",
+	"table": "hits",
+	"domain": "localhost",
 	"frequency": 1
 }

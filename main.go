@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/synw/hitsmon/db"
 	"github.com/synw/hitsmon/db/redis"
+	"github.com/synw/hitsmon/log"
 	"github.com/synw/hitsmon/state"
 	"time"
 )
@@ -20,14 +21,22 @@ func main() {
 		tr.Fatal("initializing config")
 	}
 	// init db
-	tr = db.Init()
+	tr = db.Init(*verbosity, state.Conf.Db)
 	if tr != nil {
 		tr.Fatal("initializing database")
 	}
 	if state.Verbosity > 0 {
 		fmt.Println("Starting to work ...")
 	}
+	// init logger
+	tr = log.Init(state.Conf)
+	if tr != nil {
+		tr.Printf("main")
+	}
 	// now work
+	if *verbosity > 0 {
+		fmt.Println("Starting hitsmon service with database " + state.Conf.Db.Name + " ...")
+	}
 	for {
 		duration := time.Duration(state.Conf.Frequency) * time.Second
 		for range time.Tick(duration) {

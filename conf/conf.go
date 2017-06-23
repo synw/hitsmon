@@ -18,10 +18,13 @@ func GetConf(dev bool, verbosity int) (*types.Conf, *terr.Trace) {
 	viper.AddConfigPath(".")
 	viper.SetDefault("type", "")
 	viper.SetDefault("addr", "localhost:28015")
+	viper.SetDefault("host", "localhost")
+	viper.SetDefault("port", 8086)
 	viper.SetDefault("user", "")
 	viper.SetDefault("password", "")
 	viper.SetDefault("db", "")
 	viper.SetDefault("table", "")
+	viper.SetDefault("domain", "localhost")
 	viper.SetDefault("frequency", 1)
 	viper.SetDefault("separator", "#!#")
 	// get the actual conf
@@ -43,6 +46,9 @@ func GetConf(dev bool, verbosity int) (*types.Conf, *terr.Trace) {
 	pwd := viper.Get("password").(string)
 	db := viper.Get("db").(string)
 	table := viper.Get("table").(string)
+	host := viper.Get("host").(string)
+	domain := viper.Get("domain").(string)
+	port := viper.GetInt("port")
 	frequency := viper.GetInt("frequency")
 	separator := viper.Get("separator").(string)
 	if dbtype == "" {
@@ -50,23 +56,23 @@ func GetConf(dev bool, verbosity int) (*types.Conf, *terr.Trace) {
 		tr := terr.New("conf.GetConf", err)
 		terr.Fatal("loading configuration", tr)
 	}
-	endconf := &types.Conf{dbtype, addr, user, pwd, db, table, frequency, separator, dev, verbosity}
-	verifyConf(endconf)
+	database := &types.Db{dbtype, addr, host, port, user, pwd, db, table}
+	endconf := &types.Conf{database, frequency, domain, separator, dev, verbosity}
 	return endconf, nil
 }
 
-func verifyConf(conf *types.Conf) {
-	if conf.DbType == "" {
+func Verify(conf *types.Conf) {
+	if conf.Db.Type == "" {
 		err := errors.New("No database type specified")
 		tr := terr.New("conf.verifyConf", err)
 		terr.Fatal("verifying config", tr)
 	}
-	if conf.Db == "" {
+	if conf.Db.Name == "" {
 		err := errors.New("No database specified")
 		tr := terr.New("conf.verifyConf", err)
 		terr.Fatal("verifying config", tr)
 	}
-	if conf.Table == "" {
+	if conf.Db.Table == "" {
 		err := errors.New("No database table specified")
 		tr := terr.New("conf.verifyConf", err)
 		terr.Fatal("verifying config", tr)

@@ -10,9 +10,9 @@ import (
 	"time"
 )
 
-var Conn = Connect()
+var Conn = connect()
 
-func Connect() redis.Conn {
+func connect() redis.Conn {
 	conn, err := redis.Dial("tcp", ":6379")
 	if err != nil {
 		log.Fatal(err)
@@ -22,7 +22,8 @@ func Connect() redis.Conn {
 
 func ProcessHits() error {
 	// get hits set
-	keys, err := redis.Values(Conn.Do("KEYS", "hit*"))
+	prefix := state.Conf.Domain + "_hit*"
+	keys, err := redis.Values(Conn.Do("KEYS", prefix))
 	if err != nil {
 		fmt.Println("KEYS: error retrieving Redis keys:", err)
 	}

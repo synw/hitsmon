@@ -20,6 +20,7 @@ func InitState(dev bool, verbosity int, config ...*types.Conf) *terr.Trace {
 	if tr != nil {
 		return tr
 	}
+	conf.Verify(cf)
 	Conf = cf
 	return nil
 }
