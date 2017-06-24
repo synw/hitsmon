@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/synw/hitsmon/db"
-	"github.com/synw/hitsmon/state"
+	"github.com/synw/terr"
 	"log"
 	"strconv"
 	"time"
@@ -20,9 +20,9 @@ func connect() redis.Conn {
 	return conn
 }
 
-func ProcessHits() error {
+func ProcessHits(domain string, verbosity int) *terr.Trace {
 	// get hits set
-	prefix := state.Conf.Domain + "_hit*"
+	prefix := domain + "_hit*"
 	keys, err := redis.Values(Conn.Do("KEYS", prefix))
 	if err != nil {
 		fmt.Println("KEYS: error retrieving Redis keys:", err)
@@ -37,6 +37,8 @@ func ProcessHits() error {
 		values, err := redis.Strings(Conn.Do("MGET", args...))
 		if err != nil {
 			fmt.Println("MGET: error retrieving Redis values:", err)
+			tr := terr.New("db.redis.ProcessHits", err)
+			return tr
 		}
 		// save the keys into the db
 		go db.Save(values)
@@ -48,16 +50,18 @@ func ProcessHits() error {
 		}
 		res, err := Conn.Do("EXEC")
 		if err != nil {
-			if state.Verbosity > 0 {
+			if verbosity > 0 {
 				fmt.Println("DEL: error deleting Redis keys:", err)
 			}
+			tr := terr.New("db.redis.ProcessHits", err)
+			return tr
 		}
 		// then report
-		if state.Verbosity > 0 {
+		if verbosity > 0 {
 			fmt.Println(date, "-", len(res.([]interface{})[:]), "hits")
 		}
 	} else {
-		if state.Verbosity > 0 {
+		if verbosity > 0 {
 			fmt.Println(date, "- 0 hits")
 		}
 	}

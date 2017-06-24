@@ -2,6 +2,7 @@ package conf
 
 import (
 	"errors"
+	"fmt"
 	"github.com/spf13/viper"
 	"github.com/synw/hitsmon/types"
 	"github.com/synw/terr"
@@ -58,6 +59,9 @@ func GetConf(dev bool, verbosity int) (*types.Conf, *terr.Trace) {
 	}
 	database := &types.Db{dbtype, addr, host, port, user, pwd, db, table}
 	endconf := &types.Conf{database, frequency, domain, separator, dev, verbosity}
+	if verbosity > 2 {
+		fmt.Println("Config:\n", endconf)
+	}
 	return endconf, nil
 }
 

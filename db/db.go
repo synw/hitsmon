@@ -7,22 +7,25 @@ import (
 	"github.com/synw/hitsmon/db/influxdb"
 	pg "github.com/synw/hitsmon/db/postgresql"
 	"github.com/synw/hitsmon/db/rethinkdb"
-	"github.com/synw/hitsmon/state"
 	"github.com/synw/hitsmon/types"
 	"github.com/synw/terr"
 	"strings"
 	"time"
 )
 
-var database *types.Db
+var dB *types.Db
 var g = shortid.Generator()
+var verbosity = 0
+var separator string
 
-func Init(verbosity int, db *types.Db) *terr.Trace {
+func Init(db *types.Db, sep string, verb int) *terr.Trace {
 	var tr *terr.Trace
+	verbosity = verb
+	separator = sep
 	if db.Type == "rethinkdb" {
-		tr = rethinkdb.InitDb()
+		tr = rethinkdb.InitDb(db)
 	} else if db.Type == "postgresql" {
-		tr = pg.InitDb()
+		tr = pg.InitDb(db)
 	} else if db.Type == "influxdb" {
 		tr = influxdb.Init(db)
 	} else {
@@ -36,7 +39,11 @@ func Init(verbosity int, db *types.Db) *terr.Trace {
 		}
 		return tr
 	}
-	database = db
+	dB = db
+	if verbosity > 0 {
+		msg := db.Type + " database is up at " + db.Addr
+		terr.Ok(msg)
+	}
 	return nil
 }
 
@@ -46,7 +53,7 @@ func Save(values []string) {
 	anonymous_hits := 0
 	for _, doc := range values {
 		// unpack the data
-		data := strings.Split(doc, state.Conf.Separator)
+		data := strings.Split(doc, separator)
 		id := g.Generate()
 		hit := &types.Hit{
 			id,
@@ -76,20 +83,20 @@ func Save(values []string) {
 	t1 := time.Now()
 	var tr *terr.Trace
 	num := 0
-	if database.Type == "rethinkdb" {
+	if dB.Type == "rethinkdb" {
 		num, tr = rethinkdb.Save(hits)
-	} else if database.Type == "postgresql" {
+	} else if dB.Type == "postgresql" {
 		num, tr = pg.Save(hits)
-	} else if database.Type == "influxdb" {
-		num, tr = influxdb.Save(database, hits)
+	} else if dB.Type == "influxdb" {
+		num, tr = influxdb.Save(dB, hits)
 	}
 	t2 := time.Since(t1)
 	if tr != nil {
-		if state.Verbosity > 0 {
+		if verbosity > 0 {
 			tr.Printf("db.Save")
 		}
 	} else {
-		if state.Verbosity > 1 {
+		if verbosity > 1 {
 			fmt.Println("Saved ", num, "hits in the database in", t2)
 		}
 	}

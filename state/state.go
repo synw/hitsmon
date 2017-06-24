@@ -1,26 +1,22 @@
 package state
 
 import (
-	"github.com/synw/hitsmon/conf"
+	conflib "github.com/synw/hitsmon/conf"
 	"github.com/synw/hitsmon/types"
 	"github.com/synw/terr"
 )
 
-var Conf *types.Conf
-var Verbosity int
-
-func InitState(dev bool, verbosity int, config ...*types.Conf) *terr.Trace {
-	Verbosity = verbosity
+func InitState(dev bool, verbosity int, config ...*types.Conf) (*types.Conf, *terr.Trace) {
+	var conf *types.Conf
 	// config
 	if len(config) == 1 {
-		Conf = config[0]
-		return nil
+		conf := config[0]
+		return conf, nil
 	}
-	cf, tr := conf.GetConf(dev, verbosity)
+	conf, tr := conflib.GetConf(dev, verbosity)
 	if tr != nil {
-		return tr
+		return conf, tr
 	}
-	conf.Verify(cf)
-	Conf = cf
-	return nil
+	conflib.Verify(conf)
+	return conf, nil
 }
