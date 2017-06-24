@@ -26,6 +26,14 @@ process. The Hitsmon collector will save these into a database and clean the Red
 
 Frequency is the interval between the runs to save the data: 1 means the process will run every second.
 
+## Run
+
+   ```bash
+   ./hitsmon -v=1
+   ```
+
+`-v` is the verbosity level. Default is 0 which will output nothing
+
 ## Input sources
 
 Django middleware to save hits into Redis: [django-hitsmon](https://github.com/synw/django-hitsmon)
