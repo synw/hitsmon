@@ -7,6 +7,7 @@ import (
 	"github.com/synw/terr"
 	"log"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -20,8 +21,9 @@ func connect() redis.Conn {
 	return conn
 }
 
-func ProcessHits(domain string, verbosity int) *terr.Trace {
+func ProcessHits(domain string, mutex *sync.Mutex, verbosity int) *terr.Trace {
 	// get hits set
+	mutex.Lock()
 	prefix := domain + "_hit*"
 	keys, err := redis.Values(Conn.Do("KEYS", prefix))
 	if err != nil {
@@ -65,5 +67,6 @@ func ProcessHits(domain string, verbosity int) *terr.Trace {
 			fmt.Println(date, "- 0 hits")
 		}
 	}
+	mutex.Unlock()
 	return nil
 }

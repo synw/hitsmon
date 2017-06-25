@@ -7,6 +7,7 @@ import (
 	"github.com/synw/hitsmon/db/redis"
 	//"github.com/synw/hitsmon/log"
 	"github.com/synw/hitsmon/state"
+	"sync"
 	"time"
 )
 
@@ -38,10 +39,11 @@ func main() {
 	if *verbosity > 0 {
 		//fmt.Println("Starting hitsmon service with database " + conf.Db.Name + " ...")
 	}
+	var mutex = &sync.Mutex{}
 	for {
 		duration := time.Duration(conf.Frequency) * time.Second
 		for range time.Tick(duration) {
-			go redis.ProcessHits(conf.Domain, *verbosity)
+			go redis.ProcessHits(conf.Domain, mutex, *verbosity)
 		}
 	}
 }

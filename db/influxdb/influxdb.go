@@ -71,11 +71,14 @@ func Save(db *types.Db, hits []*types.Hit) (int, *terr.Trace) {
 			"status_code":   hit.StatusCode,
 			"view":          hit.View,
 			"module":        hit.Module,
+			"ip":            hit.Ip,
 		}
 		fields := map[string]interface{}{
-			"num":          1,
-			"ip":           hit.Ip,
-			"request_time": hit.RequestTime,
+			"num":            1,
+			"request_time":   hit.RequestTime,
+			"content_length": hit.ContentLength,
+			"num_queries":    hit.NumQueries,
+			"queries_time":   hit.QueriesTime,
 		}
 		pt, err := client.NewPoint("hits", tags, fields, time.Now())
 		if err != nil {

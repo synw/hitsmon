@@ -37,4 +37,7 @@ type Hit struct {
 	StatusCode      string
 	ReasonPhrase    string
 	RequestTime     string
+	ContentLength   string
+	NumQueries      string
+	QueriesTime     string
 }
